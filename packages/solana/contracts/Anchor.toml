@@ -6,15 +6,15 @@ solana_version = "1.17.31"
 seeds = false
 skip-lint = false
 
-[programs.localnet]
-oft = "HRPXLCqspQocTjfcX4rvAPaY9q6Gwb1rrD3xXWrfJWdW"
+[programs.devnet]
+oft = "F2D8kmx1ofPJqWYfGrCeV6ZJLSTuZ9XiBodV2fQ1k5H3"
 
 [registry]
 url = "https://api.apr.dev"
 
 [provider]
-cluster = "Localnet"
-wallet = "~/.config/solana/id.json"
+cluster = "devnet"
+wallet = "/home/jusikx/.config/solana/id.json"
 
 [scripts]
 test = "yarn run ts-mocha -b -p ./tsconfig.json -t 1000000 tests/**/*.test.ts"
