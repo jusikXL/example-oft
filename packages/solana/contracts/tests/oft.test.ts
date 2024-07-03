@@ -23,17 +23,16 @@ const peer = { dstEid: 40231, peerAddress: addressToBytes32('0x010425EC6E7beC3A9
 
 describe('oft', () => {
     // Configure the client to use the local cluster.
-    // const provider = anchor.AnchorProvider.local(undefined, {
-    //     commitment: 'confirmed',
-    //     preflightCommitment: 'confirmed',
-    // })
+    const provider = anchor.AnchorProvider.local(undefined, {
+        commitment: 'confirmed',
+        preflightCommitment: 'confirmed',
+    })
+    const wallet = provider.wallet as anchor.Wallet
+
+    // const provider = anchor.AnchorProvider.env()
+    // anchor.setProvider(provider)
     // const wallet = provider.wallet as anchor.Wallet
 
-    //console.log(Buffer.from(peers[0].peerAddress).toString('hex'))
-
-    const provider = anchor.AnchorProvider.env()
-    anchor.setProvider(provider)
-    const wallet = provider.wallet as anchor.Wallet
     const OFT_PROGRAM_ID = new PublicKey(oftIdl.metadata.address)
     const ENDPOINT_PROGRAM_ID = new PublicKey(endpointIdl.metadata.address)
 
@@ -88,7 +87,6 @@ describe('oft', () => {
         console.log(peerSignature) // tx id
 
         // // step 4, mint tokens (initial supply)
-
         // const amount = BigInt(100)
         // const associatedTokenAccount = (
         //     await getOrCreateAssociatedTokenAccount(
@@ -96,8 +94,7 @@ describe('oft', () => {
         //         wallet.payer,
         //         mintKp.publicKey,
         //         wallet.publicKey,
-        //         false,
-        //         'confirmed'
+        //         false
         //     )
         // ).address
 
@@ -109,11 +106,9 @@ describe('oft', () => {
         //     TOKEN_PROGRAM_ID,
         //     OFT_PROGRAM_ID
         // )
-        // const mintSignature = await provider.sendAndConfirm(
-        //     new anchor.web3.Transaction().add(oftMintIx),
-        //     [wallet.payer],
-        //     { commitment: `finalized` }
-        // )
+        // const mintSignature = await provider.sendAndConfirm(new anchor.web3.Transaction().add(oftMintIx), [
+        //     wallet.payer,
+        // ])
         // console.log(mintSignature) // tx id
 
         // // step 5, call send
