@@ -1,8 +1,8 @@
 import { PublicKey } from '@solana/web3.js'
+
 import type { OmniPointHardhat } from '@layerzerolabs/toolbox-hardhat'
-import { Options } from '@layerzerolabs/lz-v2-utilities'
 import { DVN_CONFIG_SEED, EXECUTOR_CONFIG_SEED } from '@layerzerolabs/lz-solana-sdk-v2'
-import { addressToBytes32 } from '@layerzerolabs/lz-v2-utilities'
+import { addressToBytes32, Options } from '@layerzerolabs/lz-v2-utilities'
 import { EndpointId } from '@layerzerolabs/lz-definitions'
 
 type SolanaPeerConfig = {
@@ -48,7 +48,7 @@ export const solanaToArbSepConfig: SolanaPeerConfig = {
     to: {
         eid: EndpointId.ARBITRUM_V2_TESTNET,
     },
-    peerAddress: addressToBytes32('0x259115ef998c6712e54f3f33467596Ea6679EA77'),
+    peerAddress: addressToBytes32('0x010425EC6E7beC3A92c8220cE2237497AD762E63'),
     sendLibrary: uln,
     receiveLibraryConfig: {
         receiveLibrary: uln,
