@@ -7,7 +7,7 @@ seeds = false
 skip-lint = false
 
 [programs.testnet]
-oft = "F2D8kmx1ofPJqWYfGrCeV6ZJLSTuZ9XiBodV2fQ1k5H3"
+oft = "ARS9M9JacWPGKhMbWiigXGtvPtwskNBjXg5hGtrniedV"
 
 [registry]
 url = "https://api.apr.dev"

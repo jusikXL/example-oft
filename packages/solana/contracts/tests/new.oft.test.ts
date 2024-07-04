@@ -33,7 +33,6 @@ describe('oft', () => {
     const OFT_SEED = 'Oft'
     const OFT_DECIMALS = 6
     const OFT_PROGRAM_ID = new PublicKey(oftIdl.metadata.address)
-    // const ENDPOINT_PROGRAM_ID = new PublicKey(endpointIdl.metadata.address)
 
     it('Initialize OFT', async () => {
         //
@@ -177,7 +176,9 @@ describe('oft', () => {
             commitment: `finalized`,
         })
         console.log(
-            `✅ You initialized the receive library for dstEid ${peer.to.eid}! View the transaction here: ${signature}`
+            `✅ You initialized the receive library for dstEid ${
+                peer.to.eid
+            }! View the transaction here: ${getExplorerLink('tx', signature, cluster)}`
         )
 
         // d) init OFT Config for the pathway
@@ -187,6 +188,12 @@ describe('oft', () => {
         signature = await sendAndConfirmTransaction(connection, transaction, [wallet.payer], {
             commitment: `finalized`,
         })
-        console.log(`✅ You initialized the config for dstEid ${peer.to.eid}! View the transaction here: ${signature}`)
+        console.log(
+            `✅ You initialized the config for dstEid ${peer.to.eid}! View the transaction here: ${getExplorerLink(
+                'tx',
+                signature,
+                cluster
+            )}`
+        )
     })
 })
