@@ -155,45 +155,94 @@ describe('oft', () => {
             }! View the transaction here: ${getExplorerLink('tx', signature, cluster)}`
         )
 
-        // b) send library for the pathway
-        transaction = new Transaction().add(
-            await OftTools.createInitSendLibraryIx(wallet.publicKey, oftConfig, peer.to.eid)
-        )
-        signature = await sendAndConfirmTransaction(connection, transaction, [wallet.payer], {
-            commitment: `finalized`,
-        })
-        console.log(
-            `✅ You initialized the send library for dstEid ${
-                peer.to.eid
-            }! View the transaction here: ${getExplorerLink('tx', signature, cluster)}`
-        )
+        // // b) initialize send library for the pathway
+        // transaction = new Transaction().add(
+        //     await OftTools.createInitSendLibraryIx(wallet.publicKey, oftConfig, peer.to.eid)
+        // )
+        // signature = await sendAndConfirmTransaction(connection, transaction, [wallet.payer], {
+        //     commitment: `finalized`,
+        // })
+        // console.log(
+        //     `✅ You initialized the send library for dstEid ${
+        //         peer.to.eid
+        //     }! View the transaction here: ${getExplorerLink('tx', signature, cluster)}`
+        // )
 
-        // c) receive library for the pathway
-        transaction = new Transaction().add(
-            await OftTools.createInitReceiveLibraryIx(wallet.publicKey, oftConfig, peer.to.eid)
-        )
-        signature = await sendAndConfirmTransaction(connection, transaction, [wallet.payer], {
-            commitment: `finalized`,
-        })
-        console.log(
-            `✅ You initialized the receive library for dstEid ${
-                peer.to.eid
-            }! View the transaction here: ${getExplorerLink('tx', signature, cluster)}`
-        )
+        // // c) initialize receive library for the pathway
+        // transaction = new Transaction().add(
+        //     await OftTools.createInitReceiveLibraryIx(wallet.publicKey, oftConfig, peer.to.eid)
+        // )
+        // signature = await sendAndConfirmTransaction(connection, transaction, [wallet.payer], {
+        //     commitment: `finalized`,
+        // })
+        // console.log(
+        //     `✅ You initialized the receive library for dstEid ${
+        //         peer.to.eid
+        //     }! View the transaction here: ${getExplorerLink('tx', signature, cluster)}`
+        // )
 
-        // d) init OFT Config for the pathway
+        // // d) initialize OFT Config for the pathway
+        // transaction = new Transaction().add(
+        //     await OftTools.createInitConfigIx(wallet.publicKey, oftConfig, peer.to.eid, peer.sendLibrary)
+        // )
+        // signature = await sendAndConfirmTransaction(connection, transaction, [wallet.payer], {
+        //     commitment: `finalized`,
+        // })
+        // console.log(
+        //     `✅ You initialized the config for dstEid ${peer.to.eid}! View the transaction here: ${getExplorerLink(
+        //         'tx',
+        //         signature,
+        //         cluster
+        //     )}`
+        // )
+
+        // e) set peer
         transaction = new Transaction().add(
-            await OftTools.createInitConfigIx(wallet.publicKey, oftConfig, peer.to.eid, peer.sendLibrary)
+            await OftTools.createSetPeerIx(
+                wallet.publicKey, // admin
+                oftConfig, // oft config account
+                peer.to.eid, // destination endpoint id
+                Array.from(peer.peerAddress), // peer address
+                OFT_PROGRAM_ID // Your OFT Program ID
+            )
         )
         signature = await sendAndConfirmTransaction(connection, transaction, [wallet.payer], {
             commitment: `finalized`,
         })
         console.log(
-            `✅ You initialized the config for dstEid ${peer.to.eid}! View the transaction here: ${getExplorerLink(
+            `✅ You set the peer for dstEid ${peer.to.eid}! View the transaction here: ${getExplorerLink(
                 'tx',
                 signature,
                 cluster
             )}`
         )
+
+        // f) set enforced options
+        transaction = new Transaction().add(
+            await OftTools.createSetEnforcedOptionsIx(
+                wallet.publicKey, // your admin address
+                oftConfig, // your OFT Config
+                peer.to.eid, // destination endpoint id for the options to apply to
+                peer.sendOptions, // send options
+                peer.sendAndCallOptions,
+                OFT_PROGRAM_ID
+            )
+        )
+        signature = await sendAndConfirmTransaction(connection, transaction, [wallet.payer], {
+            commitment: `finalized`,
+        })
+        console.log(
+            `✅ You set enforced options for dstEid ${peer.to.eid}! View the transaction here: ${getExplorerLink(
+                'tx',
+                signature,
+                cluster
+            )}`
+        )
+
+        // executor options?
+
+        //
+        // 4. Send
+        //
     })
 })
