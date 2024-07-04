@@ -27,13 +27,13 @@ describe('oft', () => {
     anchor.setProvider(provider)
     const wallet = provider.wallet as anchor.Wallet
     const connection = provider.connection
-    const cluster = 'devnet'
+    const cluster = 'testnet'
 
     // CONSTANTS
     const OFT_SEED = 'Oft'
     const OFT_DECIMALS = 6
     const OFT_PROGRAM_ID = new PublicKey(oftIdl.metadata.address)
-    const ENDPOINT_PROGRAM_ID = new PublicKey(endpointIdl.metadata.address)
+    // const ENDPOINT_PROGRAM_ID = new PublicKey(endpointIdl.metadata.address)
 
     it('Initialize OFT', async () => {
         //
@@ -109,8 +109,7 @@ describe('oft', () => {
                 wallet.publicKey, // OFT Mint Authority
                 OFT_DECIMALS,
                 TOKEN_PROGRAM_ID,
-                OFT_PROGRAM_ID, // OFT Program ID that I deployed
-                ENDPOINT_PROGRAM_ID
+                OFT_PROGRAM_ID // OFT Program ID that I deployed
             )
         )
         signature = await sendAndConfirmTransaction(connection, transaction, [wallet.payer], {
