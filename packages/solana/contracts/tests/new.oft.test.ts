@@ -24,41 +24,38 @@ async function logBalance(connection: Connection, publicKey: PublicKey, label: s
 }
 
 describe('oft', () => {
-    // Configure the client to use the local cluster.
+    // provider and connection
     const provider = anchor.AnchorProvider.env()
     anchor.setProvider(provider)
     const wallet = provider.wallet as anchor.Wallet
     const connection = provider.connection
+    const cluster = 'devnet'
 
     // CONSTANTS
-
-    const peer = { eid: 40231, peerAddress: addressToBytes32('0x010425EC6E7beC3A92c8220cE2237497AD762E63') }
     const OFT_SEED = 'Oft'
-    // Generate SPL TOKEN Mint Keypair
-    const mintKeyPair = Keypair.generate()
-    // Number of decimals for the token (recommended value is 6)
     const OFT_DECIMALS = 6
-
     const OFT_PROGRAM_ID = new PublicKey(oftIdl.metadata.address)
     const ENDPOINT_PROGRAM_ID = new PublicKey(endpointIdl.metadata.address)
-    const AMOUNT = BigInt(1000000000000)
 
     it('Initialize OFT', async () => {
         //
         // 1. MINT NEW SPL TOKEN
         //
+        const mintKeypair = Keypair.generate()
+        const AMOUNT = BigInt(1000000000000)
 
+        // a) Create and initialize the token mint account
         const minimumBalanceForMint = await connection.getMinimumBalanceForRentExemption(getMintLen([]))
         let transaction = new Transaction().add(
             SystemProgram.createAccount({
                 fromPubkey: wallet.publicKey,
-                newAccountPubkey: mintKeyPair.publicKey,
+                newAccountPubkey: mintKeypair.publicKey,
                 space: getMintLen([]),
                 lamports: minimumBalanceForMint,
                 programId: TOKEN_PROGRAM_ID,
             }),
             createInitializeMintInstruction(
-                mintKeyPair.publicKey, // mint public key
+                mintKeypair.publicKey, // mint public key
                 OFT_DECIMALS, // decimals
                 wallet.publicKey, // mint authority
                 null, // freeze authority (not used here)
@@ -67,45 +64,59 @@ describe('oft', () => {
         )
 
         await logBalance(connection, wallet.publicKey, 'User')
-        await logBalance(connection, mintKeyPair.publicKey, 'Mint Account')
-        const tokenMint = await sendAndConfirmTransaction(connection, transaction, [wallet.payer, mintKeyPair], {
-            commitment: `finalized`,
-        })
-        console.log(`Mint account tx: `, tokenMint)
+        const createTokenMintSignature = await sendAndConfirmTransaction(
+            connection,
+            transaction,
+            [wallet.payer, mintKeypair],
+            {
+                commitment: `finalized`,
+            }
+        )
+        console.log(
+            `✅ Token Mint Complete! View the transaction here: ${getExplorerLink(
+                'tx',
+                createTokenMintSignature,
+                cluster
+            )}`
+        )
 
-        // mint initial supply
+        // b) Mint the initial supply via direct interaction with the token mint
         const tokenAccount = await getOrCreateAssociatedTokenAccount(
             connection,
             wallet.payer,
-            mintKeyPair.publicKey,
+            mintKeypair.publicKey,
             wallet.publicKey
-        )
+        ) // derive ata
 
-        const oftMint = await mintTo(
+        const mintInitialSupplySignature = await mintTo(
             connection,
             wallet.payer,
-            mintKeyPair.publicKey,
+            mintKeypair.publicKey,
             tokenAccount.address,
             wallet.publicKey,
             AMOUNT
         )
-        console.log(`Mint tokens tx: `, oftMint)
-
-        //
-        // 2. Create a new tx to transfer mint authority to OFT Config Account and initialize a new native OFT
-        //
-
-        const [oftConfig] = PublicKey.findProgramAddressSync(
-            [Buffer.from(OFT_SEED, 'utf8'), mintKeyPair.publicKey.toBuffer()],
-            new anchor.web3.PublicKey(oftIdl.metadata.address)
+        console.log(
+            `✅ Initial supply minted! View the transaction here: ${getExplorerLink(
+                'tx',
+                mintInitialSupplySignature,
+                cluster
+            )}`
         )
+
+        //
+        // 2. CREATE NATIVE OFT
+        //
+        const [oftConfig] = PublicKey.findProgramAddressSync(
+            [Buffer.from(OFT_SEED, 'utf8'), mintKeypair.publicKey.toBuffer()],
+            new anchor.web3.PublicKey(oftIdl.metadata.address)
+        ) // derive oft config pda
         console.log(`OFT config pda: `, oftConfig)
 
-        console.log(`${TOKEN_PROGRAM_ID}`, `${OFT_PROGRAM_ID}`, `${ENDPOINT_PROGRAM_ID}`)
-
+        // a) Transfer mint authority to oft config pda, create native oft
         transaction = new Transaction().add(
             createSetAuthorityInstruction(
-                mintKeyPair.publicKey, // mint public key
+                mintKeypair.publicKey, // mint public key
                 wallet.publicKey, // current authority
                 AuthorityType.MintTokens, // authority type
                 oftConfig // new authority
@@ -113,7 +124,7 @@ describe('oft', () => {
             await OftTools.createInitNativeOftIx(
                 wallet.publicKey, // payer
                 wallet.publicKey, // admin
-                mintKeyPair.publicKey, // mint account
+                mintKeypair.publicKey, // mint account
                 wallet.publicKey, // OFT Mint Authority
                 OFT_DECIMALS,
                 TOKEN_PROGRAM_ID,
@@ -121,30 +132,32 @@ describe('oft', () => {
                 ENDPOINT_PROGRAM_ID
             )
         )
-
-        const oftSignature = await sendAndConfirmTransaction(connection, transaction, [wallet.payer], {
+        const createOftSignature = await sendAndConfirmTransaction(connection, transaction, [wallet.payer], {
             commitment: `finalized`,
         })
-        console.log(`OFT init tx: `, oftSignature)
+        console.log(`✅ OFT created! View the transaction here: ${getExplorerLink('tx', createOftSignature, cluster)}`)
 
-        // another mint, now through oft
-
-        const oftMintTransaction = new Transaction().add(
+        // b) Mint a bit more tokens now through the OFT
+        transaction = new Transaction().add(
             await OftTools.createMintToIx(
                 wallet.publicKey,
-                mintKeyPair.publicKey,
+                mintKeypair.publicKey,
                 tokenAccount.address, // which account to mint to?
                 AMOUNT,
                 TOKEN_PROGRAM_ID,
                 OFT_PROGRAM_ID
             )
         )
-
-        // Send the transaction to mint the OFT tokens
-        const oftMintSignature = await sendAndConfirmTransaction(connection, oftMintTransaction, [wallet.payer], {
+        const mintSupplyOftSignature = await sendAndConfirmTransaction(connection, transaction, [wallet.payer], {
             commitment: `finalized`,
         })
-        console.log(oftMintSignature)
+        console.log(
+            `✅ Additional supply minted through OFT! View the transaction here: ${getExplorerLink(
+                'tx',
+                mintSupplyOftSignature,
+                cluster
+            )}`
+        )
 
         // //
         // // 3. Peer
