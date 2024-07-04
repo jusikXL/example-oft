@@ -9,13 +9,11 @@ import {
     mintTo,
 } from '@solana/spl-token'
 import { Connection, Keypair, PublicKey, SystemProgram, Transaction, sendAndConfirmTransaction } from '@solana/web3.js'
-import { assert } from 'chai'
 import { OftTools } from '@layerzerolabs/lz-solana-sdk-v2'
 import oftIdl from '../target/idl/oft.json'
 import endpointIdl from '../target/idl/endpoint.json'
-import { addressToBytes32 } from '@layerzerolabs/lz-v2-utilities'
-import { Options } from '@layerzerolabs/lz-v2-utilities'
-import { getKeypairFromEnvironment, getExplorerLink } from '@solana-developers/helpers'
+import { getExplorerLink } from '@solana-developers/helpers'
+import { solanaToArbSepConfig as peer } from './constants'
 
 // Checks the balance to confirm connection.
 async function logBalance(connection: Connection, publicKey: PublicKey, label: string = '') {
@@ -73,7 +71,7 @@ describe('oft', () => {
             }
         )
         console.log(
-            `✅ Token Mint Complete! View the transaction here: ${getExplorerLink(
+            `✅ Token Mint created! View the transaction here: ${getExplorerLink(
                 'tx',
                 createTokenMintSignature,
                 cluster
@@ -159,54 +157,54 @@ describe('oft', () => {
             )}`
         )
 
-        // //
-        // // 3. Peer
-        // //
+        //
+        // 3. Peer
+        //
 
-        // // a) peer account
-        // const peerTransaction = new Transaction().add(
-        //     await OftTools.createInitNonceIx(wallet.publicKey, peer.eid, oftConfig, peer.peerAddress)
-        // )
-        // const peerSignature = await sendAndConfirmTransaction(connection, peerTransaction, [wallet.payer], {
-        //     commitment: `finalized`,
-        // })
-        // console.log(peerSignature)
+        // a) peer account
+        const peerTransaction = new Transaction().add(
+            await OftTools.createInitNonceIx(wallet.publicKey, peer.to.eid, oftConfig, peer.peerAddress)
+        )
+        const peerSignature = await sendAndConfirmTransaction(connection, peerTransaction, [wallet.payer], {
+            commitment: `finalized`,
+        })
+        console.log(peerSignature)
 
-        // // b) send library for the pathway
-        // const initSendLibraryTransaction = new Transaction().add(
-        //     await OftTools.createInitSendLibraryIx(wallet.publicKey, oftConfig, peer.eid)
-        // )
+        // b) send library for the pathway
+        const initSendLibraryTransaction = new Transaction().add(
+            await OftTools.createInitSendLibraryIx(wallet.publicKey, oftConfig, peer.to.eid)
+        )
 
-        // const initSendLibrarySignature = await sendAndConfirmTransaction(
-        //     connection,
-        //     initSendLibraryTransaction,
-        //     [wallet.payer],
-        //     { commitment: `finalized` }
-        // )
-        // console.log(initSendLibrarySignature)
+        const initSendLibrarySignature = await sendAndConfirmTransaction(
+            connection,
+            initSendLibraryTransaction,
+            [wallet.payer],
+            { commitment: `finalized` }
+        )
+        console.log(initSendLibrarySignature)
 
-        // // c) receive library for the pathway
-        // const initReceiveLibraryTransaction = new Transaction().add(
-        //     await OftTools.createInitReceiveLibraryIx(wallet.publicKey, oftConfig, peer.eid)
-        // )
-        // const initReceiveLibrarySignature = await sendAndConfirmTransaction(
-        //     connection,
-        //     initReceiveLibraryTransaction,
-        //     [wallet.payer],
-        //     { commitment: `finalized` }
-        // )
-        // console.log(initReceiveLibrarySignature)
+        // c) receive library for the pathway
+        const initReceiveLibraryTransaction = new Transaction().add(
+            await OftTools.createInitReceiveLibraryIx(wallet.publicKey, oftConfig, peer.to.eid)
+        )
+        const initReceiveLibrarySignature = await sendAndConfirmTransaction(
+            connection,
+            initReceiveLibraryTransaction,
+            [wallet.payer],
+            { commitment: `finalized` }
+        )
+        console.log(initReceiveLibrarySignature)
 
-        // // d) init OFT Config for the pathway
-        // const initConfigTransaction = new Transaction().add(
-        //     await OftTools.createInitConfigIx(wallet.publicKey, oftConfig, peer.eid, peer.sendLibrary)
-        // )
+        // d) init OFT Config for the pathway
+        const initConfigTransaction = new Transaction().add(
+            await OftTools.createInitConfigIx(wallet.publicKey, oftConfig, peer.to.eid, peer.sendLibrary)
+        )
 
-        // const initConfigSignature = await sendAndConfirmTransaction(connection, initConfigTransaction, [wallet.payer], {
-        //     commitment: `finalized`,
-        // })
-        // console.log(
-        //     `✅ You initialized the config for dstEid ${peer.eid}! View the transaction here: ${initConfigSignature}`
-        // )
+        const initConfigSignature = await sendAndConfirmTransaction(connection, initConfigTransaction, [wallet.payer], {
+            commitment: `finalized`,
+        })
+        console.log(
+            `✅ You initialized the config for dstEid ${peer.to.eid}! View the transaction here: ${initConfigSignature}`
+        )
     })
 })
